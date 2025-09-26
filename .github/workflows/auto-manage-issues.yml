@@ -8,12 +8,16 @@ on:
 
 jobs:
   auto-block-issues:
+    permissions:
+      issues: write
+      contents: read
     if: github.actor != github.event.repository.owner.login
     runs-on: ubuntu-latest
     steps:
       - name: Detect and block sensitive issues
         uses: actions/github-script@v7
         with:
+          # 关键改动在这里！使用 | 将整个 script 内容作为块标量
           script: |
             // Get issue title and body (converted to lowercase)
             const title = context.payload.issue.title.toLowerCase();
@@ -62,15 +66,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: |
-                  ---
-                  **⚠️ Content Blocked Notification**
-
-                  This issue has been automatically blocked because it contains restricted content. The project maintenance team only accepts technical discussions related to code development, feature implementation, and bug fixes.
-
-                  According to our community guidelines, meta-discussions about project popularity, Star counts, or any form of artificial activity are not within the scope of this repository.
-
-                  *This action was performed by an automated system.*
+                body: "---\n<strong>⚠️ Content Blocked Notification</strong>\n\nThis issue has been automatically blocked because it contains restricted content. The project maintenance team only accepts technical discussions related to code development, feature implementation, and bug fixes.\n\nAccording to our community guidelines, meta-discussions about project popularity, Star counts, or any form of artificial activity are not within the scope of this repository.\n\n*This action was performed by an automated system.*"
               });
               
               // 3. Immediately close the issue
