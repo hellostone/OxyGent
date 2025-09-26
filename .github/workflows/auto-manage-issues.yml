@@ -1,4 +1,4 @@
-# .github/workflows/auto-block-issues.yml
+# .github/workflows/auto-manage-issues.yml
 
 name: Auto Block Sensitive Issues
 
@@ -8,7 +8,6 @@ on:
 
 jobs:
   auto-block-issues:
-    # Skip processing if the issue is opened/edited by the repository owner
     if: github.actor != github.event.repository.owner.login
     runs-on: ubuntu-latest
     steps:
@@ -63,14 +62,15 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: `---
-**⚠️ Content Blocked Notification**
+                body: |
+                  ---
+                  **⚠️ Content Blocked Notification**
 
-This issue has been automatically blocked because it contains restricted content. The project maintenance team only accepts technical discussions related to code development, feature implementation, and bug fixes.
+                  This issue has been automatically blocked because it contains restricted content. The project maintenance team only accepts technical discussions related to code development, feature implementation, and bug fixes.
 
-According to our community guidelines, meta-discussions about project popularity, Star counts, or any form of artificial activity are not within the scope of this repository.
+                  According to our community guidelines, meta-discussions about project popularity, Star counts, or any form of artificial activity are not within the scope of this repository.
 
-*This action was performed by an automated system.*`
+                  *This action was performed by an automated system.*
               });
               
               // 3. Immediately close the issue
