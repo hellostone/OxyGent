@@ -1,0 +1,98 @@
+name: Auto Manage Specific Issues
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  auto-manage-issues:
+    # Only run for non-owners to avoid processing own issues
+    if: github.actor != github.event.repository.owner.login
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check issue content for specific keywords
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get issue title and body (case-insensitive matching)
+            const title = context.payload.issue.title.toLowerCase();
+            const body = context.payload.issue.body?.toLowerCase() || '';
+            
+            // Bilingual keyword list (Chinese + English)
+            const sensitiveKeywords = [
+              // Chinese keywords
+              '刷星', '刷赞', '买星', '买赞', '虚假star', '假星', 
+              '可疑账号', '刷热度', '买热度', 'basinarapprowayl',
+              
+              // English keywords
+              'star farming', 'buy star', 'fake star', 'fake stars',
+              'artificial stars', 'star manipulation', 'buy github stars',
+              'suspicious account', 'bot accounts'
+            ];
+            
+            // Check if content contains any sensitive keywords
+            const hasSensitiveContent = sensitiveKeywords.some(keyword => 
+              title.includes(keyword.toLowerCase()) || 
+              body.includes(keyword.toLowerCase())
+            );
+            
+            if (hasSensitiveContent) {
+              console.log(`Sensitive content detected in issue #${context.issue.number}. Processing...`);
+              
+              // 1. Add labels (ensure these labels exist in your repository)
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  labels: ['🚩auto-flagged', '⚠️needs-review']
+                });
+                console.log('Labels added successfully');
+              } catch (error) {
+                console.log('Failed to add labels, they may not exist:', error);
+              }
+              
+              // 2. Add automated response comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `---
+**🔍 Automated Detection Notice**
+
+This issue has been automatically flagged due to detected keywords related to community guidelines.
+
+The maintainer team focuses on keeping discussions centered around **technical development, feature implementation, and bug fixes**. Meta-discussions about project popularity metrics are noted and handled through appropriate channels.
+
+**Next steps:**
+- This issue will be reviewed by maintainers
+- If content is duplicate or off-topic, the issue may be closed
+- Thank you for your understanding and cooperation
+
+*This is an automated response*`
+              });
+              
+              // 3. 【Optional】Close issue immediately - uncomment below to enable
+              /*
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                state: 'closed'
+              });
+              console.log('Issue closed automatically');
+              */
+              
+              // 4. 【Optional】Lock issue - uncomment below to enable
+              /*
+              await github.rest.issues.lock({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number
+              });
+              console.log('Issue locked');
+              */
+              
+            } else {
+              console.log('No sensitive content detected. Skipping processing.');
+            }
