@@ -44,7 +44,6 @@ from .oxy.mcp_tools.base_mcp_client import BaseMCPClient
 from .routes import router
 from .schemas import OxyRequest, OxyResponse, WebResponse
 from .utils.common_utils import (
-    _compose_query_parts,
     generate_uuid,
     get_format_time,
     msgpack_preprocess,
@@ -243,11 +242,9 @@ class MAS(BaseModel):
     async def init_db(self):
         """Es --- (table_name: key)
 
-        {app_name}_trace: trace_id: record trace of each call {app_name}_node: node_id:
-        record log of each node {app_name}_history: sub_session_id: record history of
-        read and write operations
-
-        sub_session_id = trace_id_{caller}_{callee}
+        {app_name}_trace: trace_id: record trace of each call
+        {app_name}_node: node_id: record log of each node
+        {app_name}_history: history_id: record history of read and write operations
         """
 
         # es
@@ -347,7 +344,7 @@ class MAS(BaseModel):
             {
                 "mappings": {
                     "properties": {
-                        "sub_session_id": {"type": "keyword"},
+                        "history_id": {"type": "keyword"},
                         "session_name": {"type": "keyword"},
                         "trace_id": {"type": "keyword"},
                         "memory": {"type": "text"},
@@ -631,34 +628,11 @@ class MAS(BaseModel):
             OxyResponse: Fully populated response object.
         """
         try:
-            # distinct attachments
-            if "attachments" in payload and payload["attachments"]:
-                atts, remotes = [], []
-                for att in payload["attachments"]:
-                    is_remote = att.startswith(("http://", "https://"))
-                    full_path = (
-                        att
-                        if is_remote
-                        else os.path.join(Config.get_cache_save_dir(), "uploads", att)
-                    )
-                    atts.append(full_path)
-                    if is_remote:
-                        remotes.append(full_path)
-                payload["attachments"] = atts
-                if remotes:
-                    urls = payload.get("web_file_url_list", [])
-                    payload["web_file_url_list"] = list(dict.fromkeys(urls + remotes))
-
-                payload["query"] = _compose_query_parts(payload.get("query", ""), atts)
-
             if "shared_data" not in payload:
                 payload["shared_data"] = dict()
             payload["shared_data"]["query"] = payload["query"]
 
             group_data = payload.get("group_data", {})
-
-            # payload = payload or {}
-            # payload.set default("shared_data",{})["query"] = payload.get("query","")
 
             if "restart_node_id" in payload and payload.get("restart_node_id"):
                 es_response = await self.es_client.search(
@@ -896,6 +870,9 @@ class MAS(BaseModel):
         ) as web_path:
             app.mount("/web", StaticFiles(directory=str(web_path)), name="web")
 
+        upload_dir = os.path.join(Config.get_cache_save_dir(), "uploads")
+        app.mount("/static", StaticFiles(directory=upload_dir), name="static")
+
         """
         For all of the nodes we fill the following information:
         - path: The path from the root node (master agent) to the currrent node.
@@ -983,36 +960,6 @@ class MAS(BaseModel):
 
             if "query" not in payload:
                 payload["query"] = ""
-
-            if "attachments" in payload:
-                attachments_with_path = []
-                remote_urls = []
-
-                for attachment in payload["attachments"]:
-                    is_remote = attachment.startswith(("http://", "https://"))
-                    file_path = (
-                        attachment
-                        if is_remote
-                        else os.path.join(
-                            Config.get_cache_save_dir(), "uploads", attachment
-                        )
-                    )
-                    attachments_with_path.append(file_path)
-                    if is_remote:
-                        remote_urls.append(file_path)
-
-                # distinct attachments
-                payload["attachments"] = attachments_with_path
-                if remote_urls:
-                    existing_urls = payload.get("web_file_url_list", [])
-                    payload["web_file_url_list"] = list(
-                        dict.fromkeys(existing_urls + remote_urls)
-                    )
-
-                # a2a style query
-                payload["query"] = _compose_query_parts(
-                    payload.get("query", ""), attachments_with_path
-                )
 
             if "current_trace_id" not in payload:
                 payload["current_trace_id"] = generate_uuid()
