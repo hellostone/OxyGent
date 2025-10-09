@@ -1,8 +1,9 @@
+import os
+
 from pydantic import Field
 
 from oxygent import MAS, Config, OxyRequest, oxy
 from oxygent.prompts import INTENTION_PROMPT
-from oxygent.utils.env_utils import get_env_var
 
 # Config.set_log_level('INFO')
 Config.load_from_json("./config.json", env="default")
@@ -50,23 +51,23 @@ async def joke_tool(joke_type: str = Field(description="Type of joke")):
 oxy_space = [
     oxy.HttpLLM(
         name="default_llm",
-        api_key=get_env_var("DEFAULT_LLM_API_KEY"),
-        base_url=get_env_var("DEFAULT_LLM_BASE_URL"),
-        model_name=get_env_var("DEFAULT_LLM_MODEL_NAME"),
+        api_key=os.getenv("DEFAULT_LLM_API_KEY"),
+        base_url=os.getenv("DEFAULT_LLM_BASE_URL"),
+        model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
     ),
     oxy.ChatAgent(
         name="intent_agent", prompt=INTENTION_PROMPT, llm_model="default_llm"
     ),
     fh,
     oxy.StdioMCPClient(
-        name="time",
+        name="time_tools",
         params={
             "command": "uvx",
             "args": ["mcp-server-time", "--local-timezone=Asia/Shanghai"],
         },
     ),
     oxy.StdioMCPClient(
-        name="filesystem",
+        name="file_tools",
         params={
             "command": "npx",
             "args": ["-y", "@modelcontextprotocol/server-filesystem", "./local_file"],
@@ -158,28 +159,28 @@ oxy_space = [
     oxy.ReActAgent(
         name="time_agent",
         desc="A tool for querying the time",
-        tools=["time"],
+        tools=["time_tools"],
         llm_model="default_llm",
         timeout=100,
     ),
     oxy.ReActAgent(
         name="time_agent_b",
         desc="A tool for querying the time",
-        tools=["time"],
+        tools=["time_tools"],
         llm_model="default_llm",
         timeout=100,
     ),
     oxy.ReActAgent(
         name="time_agent_c",
         desc="A tool for querying the time",
-        tools=["time"],
+        tools=["time_tools"],
         llm_model="default_llm",
         timeout=100,
     ),
     oxy.ReActAgent(
         name="file_agent",
         desc="A tool for operating the file system",
-        tools=["filesystem"],
+        tools=["file_tools"],
         llm_model="default_llm",
     ),
     oxy.WorkflowAgent(

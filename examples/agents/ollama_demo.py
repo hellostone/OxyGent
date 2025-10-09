@@ -1,15 +1,15 @@
 """gemma_cli_demo.py"""
 
 import asyncio
+import os
 
 from oxygent import MAS, oxy
-from oxygent.utils.env_utils import get_env_var
 
 oxy_space = [
     oxy.HttpLLM(
         name="local_gemma",
         base_url="http://localhost:11434/api/chat",
-        model_name=get_env_var("DEFAULT_OLLAMA_MODEL"),
+        model_name=os.getenv("DEFAULT_OLLAMA_MODEL"),
         llm_params={"temperature": 0.2},
         semaphore=1,
         timeout=240,

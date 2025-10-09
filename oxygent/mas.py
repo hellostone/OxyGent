@@ -147,8 +147,6 @@ class MAS(BaseModel):
         import platform
         from datetime import datetime
 
-        # logger.info(f"MAS app name: {Config.get_app_name()}")
-        # logger.info(f"MAS app env: {Config._env}")
         logger.info("=" * 64)
         logger.info("🚀 OxyGent MAS Application Startup Information")
         logger.info("=" * 64)
@@ -157,7 +155,6 @@ class MAS(BaseModel):
         logger.info(f"Environment  : {Config._env}")
         logger.info(f"Port         : {Config.get_server_port()}")
         logger.info(f"Python Ver   : {platform.python_version()}")
-        # logger.info(f"Config Path  : {Config.get_config_path()}")
         logger.info(f"Cache Dir    : {Config.get_cache_save_dir()}")
         logger.info(f"Start Time   : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         logger.info("=" * 64)
@@ -172,9 +169,6 @@ class MAS(BaseModel):
             ValueError: If another component with the same ``oxy.name``
                 already exists in the registry.
         """
-        # print(self.oxy_name_to_oxy)
-        # import pdb
-        # pdb.set_trace()
         if oxy.name in self.oxy_name_to_oxy:
             raise Exception(f"oxy [{oxy.name}] already exists.")
         self.oxy_name_to_oxy[oxy.name] = oxy

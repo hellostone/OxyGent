@@ -388,7 +388,7 @@ class BrowserDemo:
     def _create_filesystem_tools(self) -> oxy.StdioMCPClient:
         """Create and configure the filesystem tools component."""
         return oxy.StdioMCPClient(
-            name="filesystem",
+            name="file_tools",
             params={
                 "command": "npx",
                 "args": [
@@ -440,7 +440,7 @@ class BrowserDemo:
             desc_for_llm="Agent for file system operations",
             category="agent",
             class_name="ReActAgent",
-            tools=["filesystem"],
+            tools=["file_tools"],
             llm_model="default_llm",
             prompt=FILE_SYSTEM_PROMPT,
             is_entrance=False,

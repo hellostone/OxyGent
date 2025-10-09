@@ -85,14 +85,14 @@ oxy_space = [
     oxy.ChatAgent(name="intent_agent", prompt=INTENTION_PROMPT),
     fh,
     oxy.StdioMCPClient(
-        name="time",
+        name="time_tools",
         params={
             "command": "uvx",
             "args": ["mcp-server-time", "--local-timezone=Asia/Shanghai"],
         },
     ),
     oxy.StdioMCPClient(
-        name="filesystem",
+        name="file_tools",
         params={
             "command": "npx",
             "args": ["-y", "@modelcontextprotocol/server-filesystem", "./local_file"],
@@ -118,7 +118,7 @@ oxy_space = [
         name="time_agent",
         desc="A tool for time query.",
         additional_prompt="Do not send other information except time.",
-        tools=["time"],
+        tools=["time_tools"],
         func_process_input=update_query,
         trust_mode=False,
         timeout=10,
@@ -126,7 +126,7 @@ oxy_space = [
     oxy.ReActAgent(
         name="file_agent",
         desc="A tool for file operation.",
-        tools=["filesystem"],
+        tools=["file_tools"],
     ),
     oxy.WorkflowAgent(
         name="math_agent",
@@ -146,11 +146,11 @@ async def main():
         Method 1: async with MAS(oxy_space=oxy_space) as mas:
         Method 2: mas = await MAS.create(oxy_space=oxy_space)
     call directly:
-        await mas.call(callee = 'joke_tool', arguments = {'joke_type': 'comic'})
-    call as a cli:
-        await mas.start_cli_mode(first_query='Get what time it is and save in `log.txt` under `/local_file`')
-        await mas.start_web_service(first_query='Get what time it is and save in `log.txt` under `/local_file`')
-        await mas.start_batch_processing(['Hello', 'What time is it now', '200 positions of Pi', 'Get what time it is and save in `log.txt` under `/local_file`'])
+        await mas.call(callee="joke_tool", arguments={"joke_type": "comic"})
+    start:
+        await mas.start_cli_mode(first_query="Get what time it is and save in `log.txt` under `/local_file`")
+        await mas.start_web_service(first_query="Get what time it is and save in `log.txt` under `/local_file`")
+        await mas.start_batch_processing(["Hello", "What time is it now", "200 positions of Pi"])
     """
     async with MAS(oxy_space=oxy_space) as mas:
         await mas.start_web_service(

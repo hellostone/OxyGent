@@ -1,16 +1,16 @@
 """Demo for using OxyGent with multiple LLMs and an agent."""
 
 import asyncio
+import os
 
 from oxygent import MAS, oxy
-from oxygent.utils.env_utils import get_env_var
 
 oxy_space = [
     oxy.HttpLLM(
         name="default_llm",
-        api_key=get_env_var("DEFAULT_LLM_API_KEY"),
-        base_url=get_env_var("DEFAULT_LLM_BASE_URL"),
-        model_name=get_env_var("DEFAULT_LLM_MODEL_NAME"),
+        api_key=os.getenv("DEFAULT_LLM_API_KEY"),
+        base_url=os.getenv("DEFAULT_LLM_BASE_URL"),
+        model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
     ),
     # Technical expert - Detailed technical feasibility analysis framework
     oxy.ChatAgent(

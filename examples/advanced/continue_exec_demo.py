@@ -1,7 +1,7 @@
 import asyncio
+import os
 
 from oxygent import MAS, Config, OxyRequest, oxy
-from oxygent.utils.env_utils import get_env_var
 
 Config.set_agent_llm_model("default_llm")
 
@@ -42,21 +42,21 @@ async def workflow(oxy_request: OxyRequest):
 oxy_space = [
     oxy.HttpLLM(
         name="default_llm",
-        api_key=get_env_var("DEFAULT_LLM_API_KEY"),
-        base_url=get_env_var("DEFAULT_LLM_BASE_URL"),
-        model_name=get_env_var("DEFAULT_LLM_MODEL_NAME"),
+        api_key=os.getenv("DEFAULT_LLM_API_KEY"),
+        base_url=os.getenv("DEFAULT_LLM_BASE_URL"),
+        model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
         llm_params={"temperature": 0.01},
         semaphore=4,
     ),
     oxy.StdioMCPClient(
-        name="time",
+        name="time_tools",
         params={
             "command": "uvx",
             "args": ["mcp-server-time", "--local-timezone=Asia/Shanghai"],
         },
     ),
     oxy.StdioMCPClient(
-        name="filesystem",
+        name="file_tools",
         params={
             "command": "npx",
             "args": ["-y", "@modelcontextprotocol/server-filesystem", "./local_file"],
@@ -77,12 +77,12 @@ oxy_space = [
     oxy.ReActAgent(
         name="time_agent",
         desc="A tool for time query.",
-        tools=["time"],
+        tools=["time_tools"],
     ),
     oxy.ReActAgent(
         name="file_agent",
         desc="A tool for file operation.",
-        tools=["filesystem"],
+        tools=["file_tools"],
     ),
     oxy.WorkflowAgent(
         name="math_agent",
