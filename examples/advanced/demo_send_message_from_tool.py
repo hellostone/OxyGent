@@ -1,15 +1,14 @@
+import asyncio
 import os
 
 from pydantic import Field
 
-from oxygent import MAS, Config, OxyRequest, oxy
+from oxygent import MAS, OxyRequest, oxy
 
-Config.set_server_port(8090)
-
-math_fh = oxy.FunctionHub(name="math_tools")
+fh_math_tools = oxy.FunctionHub(name="math_tools")
 
 
-@math_fh.tool(description="A tool that can calculate the value of pi.")
+@fh_math_tools.tool(description="A tool that can calculate the value of pi.")
 async def calc_pi(
     prec: int = Field(description="how many decimal places"),
     oxy_request: OxyRequest = Field(description="The oxy request"),
@@ -38,7 +37,7 @@ oxy_space = [
         base_url=os.getenv("DEFAULT_LLM_BASE_URL"),
         model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
     ),
-    math_fh,
+    fh_math_tools,
     oxy.ReActAgent(
         name="master_agent",
         tools=["math_tools"],
@@ -50,11 +49,9 @@ oxy_space = [
 async def main():
     async with MAS(oxy_space=oxy_space) as mas:
         await mas.start_web_service(
-            first_query="Please calculate the 20 positions of Pi"
+            first_query="Please calculate the 20 positions of Pi",
         )
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())

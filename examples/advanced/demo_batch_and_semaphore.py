@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 from oxygent import MAS, oxy
@@ -8,19 +9,21 @@ oxy_space = [
         api_key=os.getenv("DEFAULT_LLM_API_KEY"),
         base_url=os.getenv("DEFAULT_LLM_BASE_URL"),
         model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
-        llm_params={"temperature": 0.01, "stream": True},
-        semaphore=4,
+        semaphore=4,  # limit concurrency to 4
     ),
-    oxy.ChatAgent(name="intent_agent", llm_model="default_llm"),
+    oxy.ChatAgent(
+        name="chat_agent",
+        llm_model="default_llm",
+        semaphore=6,  # limit concurrency to 6
+    ),
 ]
 
 
 async def main():
     async with MAS(oxy_space=oxy_space) as mas:
-        await mas.start_web_service(first_query="你好")
+        outs = await mas.start_batch_processing(["hello"] * 10, return_trace_id=True)
+        [print(out) for out in outs]
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())

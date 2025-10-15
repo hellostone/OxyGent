@@ -7,22 +7,20 @@ from oxygent import MAS, oxy
 
 oxy_space = [
     oxy.HttpLLM(
-        name="local_gemma",
+        name="default_llm",
         base_url="http://localhost:11434/api/chat",
         model_name=os.getenv("DEFAULT_OLLAMA_MODEL"),
-        llm_params={"temperature": 0.2},
         semaphore=1,
-        timeout=240,
     ),
     oxy.ChatAgent(
         name="master_agent",
         is_master=True,
-        llm_model="local_gemma",
+        llm_model="default_llm",
     ),
 ]
 
 
-async def chat():
+async def main():
     async with MAS(oxy_space=oxy_space) as mas:
         history = [{"role": "system", "content": "You are a helpful assistant."}]
 
@@ -42,4 +40,4 @@ async def chat():
 
 
 if __name__ == "__main__":
-    asyncio.run(chat())
+    asyncio.run(main())

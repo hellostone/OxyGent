@@ -19,8 +19,8 @@ from oxygent.schemas import OxyState
 
 class CounterAgent(BaseAgent):
     async def execute(self, oxy_request: OxyRequest):
-        cnt = oxy_request.get_global("counter", 0) + 1
-        oxy_request.set_global("counter", cnt)
+        cnt = oxy_request.get_global_data("counter", 0) + 1
+        oxy_request.set_global_data("counter", cnt)
 
         return OxyResponse(
             state=OxyState.COMPLETED,
@@ -35,9 +35,6 @@ oxy_space = [
         api_key=os.getenv("DEFAULT_LLM_API_KEY"),
         base_url=os.getenv("DEFAULT_LLM_BASE_URL"),
         model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
-        llm_params={"temperature": 0.01},
-        semaphore=4,
-        timeout=240,
     ),
     CounterAgent(
         name="master_agent",  # mark as master so chat_with_agent works
@@ -47,7 +44,7 @@ oxy_space = [
 
 
 async def main():
-    async with MAS(name="global_demo", oxy_space=oxy_space) as mas:
+    async with MAS(oxy_space=oxy_space) as mas:
         # first call → counter = 1
         r1 = await mas.chat_with_agent({"query": "first"})
         print(r1.output)

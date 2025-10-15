@@ -18,8 +18,10 @@ oxy_space = [
         model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
     ),
     oxy.RAGAgent(
-        name="intent_agent",
+        name="qa_agent",
         llm_model="default_llm",
+        prompt="""You are a helpful assistant! You can refer to the following knowledge to answer the questions:\n${knowledge}""",
+        knowledge_placeholder="knowledge",
         func_retrieve_knowledge=func_retrieve_knowledge,
     ),
 ]
@@ -28,7 +30,7 @@ oxy_space = [
 async def main():
     async with MAS(oxy_space=oxy_space) as mas:
         await mas.start_web_service(
-            first_query="Please calculate the 20 positions of Pi"
+            first_query="Please calculate the 20 positions of Pi",
         )
 
 

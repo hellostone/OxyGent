@@ -1,3 +1,5 @@
+"""Demo for using OxyGent with multiple LLMs and an agent."""
+
 import asyncio
 import os
 
@@ -9,22 +11,24 @@ oxy_space = [
         api_key=os.getenv("DEFAULT_LLM_API_KEY"),
         base_url=os.getenv("DEFAULT_LLM_BASE_URL"),
         model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
+        llm_params={"temperature": 0.01},
+        semaphore=4,
+        timeout=300,
     ),
-    oxy.ReActAgent(
-        name="file_react_agent",
+    oxy.ChatAgent(
+        name="master_agent",
         llm_model="default_llm",
+        prompt="You are a helpful assistant.",
     ),
 ]
 
 
 async def main():
     async with MAS(oxy_space=oxy_space) as mas:
-        payload = {
-            "query": "Introduce the content of the file",
-            "attachments": ["README.md"],
-        }
-        oxy_response = await mas.chat_with_agent(payload=payload)
-        print("LLM: ", oxy_response.output)
+        await mas.start_web_service(
+            first_query="Hello",
+            welcome_message="Hi, I’m OxyGent. How can I assist you?",
+        )
 
 
 if __name__ == "__main__":

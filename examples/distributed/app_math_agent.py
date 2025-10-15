@@ -56,7 +56,6 @@ oxy_space = [
         tools=["my_tools"],
         func_workflow=workflow,
         llm_model="default_name",
-        is_retain_master_short_memory=True,
     ),
 ]
 

@@ -1,7 +1,12 @@
+"""Demo for using OxyGent with multiple LLMs and an agent."""
+
 import asyncio
 import os
 
-from oxygent import MAS, oxy
+from oxygent import MAS, Config, oxy
+
+Config.load_from_json("./config.json", env="default")
+Config.set_agent_llm_model("default_llm")
 
 oxy_space = [
     oxy.HttpLLM(
@@ -9,11 +14,9 @@ oxy_space = [
         api_key=os.getenv("DEFAULT_LLM_API_KEY"),
         base_url=os.getenv("DEFAULT_LLM_BASE_URL"),
         model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
-        llm_params={"stream": True},
     ),
-    oxy.ChatAgent(
-        name="qa_agent",
-        llm_model="default_llm",
+    oxy.ReActAgent(
+        name="master_agent",
     ),
 ]
 
