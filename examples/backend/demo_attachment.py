@@ -9,6 +9,7 @@ oxy_space = [
         api_key=os.getenv("DEFAULT_LLM_API_KEY"),
         base_url=os.getenv("DEFAULT_LLM_BASE_URL"),
         model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
+        is_multimodal_supported=True,
     ),
     oxy.ChatAgent(
         name="qa_agent",

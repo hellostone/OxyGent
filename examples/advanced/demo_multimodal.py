@@ -24,5 +24,23 @@ async def main():
         await mas.start_web_service(first_query="这是什么？")
 
 
+async def test():
+    async with MAS(oxy_space=oxy_space) as mas:
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant.",
+            },
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image_url", "image_url": {"url": "./test_pic.png"}},
+                    {"type": "text", "text": "这是什么？"},
+                ],
+            },
+        ]
+        await mas.call(callee="default_vlm", arguments={"messages": messages})
+
+
 if __name__ == "__main__":
     asyncio.run(main())
