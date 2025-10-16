@@ -60,10 +60,10 @@ oxy_space = [
         model_name=os.getenv("DEFAULT_LLM_MODEL_NAME"),
     ),
     oxy.StdioMCPClient(
-        name="my_tools",
+        name="math_tools",
         params={
             "command": "uv",
-            "args": ["--directory", "./mcp_servers", "run", "my_tools.py"],
+            "args": ["--directory", "./mcp_servers", "run", "math_tools.py"],
         },
     ),
     oxy.ChatAgent(
@@ -74,7 +74,7 @@ oxy_space = [
         name="math_agent",
         is_master=True,
         sub_agents=["chat_agent"],
-        tools=["my_tools"],
+        tools=["math_tools"],
         func_workflow=workflow,
         llm_model="default_llm",
     ),
